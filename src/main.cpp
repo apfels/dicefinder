@@ -1,11 +1,14 @@
+#include "args.hpp"
+
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
 
-
-int main(int argc, char** argv)
+int main(int /*argc*/, char** argv)
 {
-  for(auto i{0z}; i<argc; ++i) { std::cout << argv[i]; } // NOLINT
+  auto args { args::extract_args(argv, "x") };
+  std::cout << args << '\n';
+
   std::cout << '\n';
 
   const auto start_time { std::chrono::steady_clock::now() };

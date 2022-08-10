@@ -3,7 +3,8 @@ project( dicefinder )
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable( dicefinder
-  src/main.cpp )
+  src/main.cpp
+  src/args.cpp )
 
 set_property(TARGET dicefinder PROPERTY CXX_STANDARD 23)
 

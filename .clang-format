@@ -24,14 +24,14 @@ AllowShortCaseLabelsOnASingleLine: true
 AllowShortEnumsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllArgumentsOnNextLine: false
 
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
-AlwaysBreakTemplateDeclarations: MultiLine
+AlwaysBreakTemplateDeclarations: Yes
 
 BinPackArguments: false
 BinPackParameters: false
@@ -43,7 +43,7 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: true
-  AfterControlStatement: MultiLine
+  AfterControlStatement: Always
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: false
@@ -81,6 +81,9 @@ IndentExternBlock: AfterExternBlock
 IndentPPDirectives: None
 IndentWrappedFunctionNames: false
 InsertTrailingCommas: Wrapped
+IndentRequires: true
+# clang-format 15
+# RequiresClausePosition: OwnLine
 
 NamespaceIndentation: Inner
 
