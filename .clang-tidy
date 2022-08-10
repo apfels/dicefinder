@@ -1,0 +1,1 @@
+Checks: 'bugprone-*,cert-*,clang-analyzer-*,-clang-analyzer-osx,cppcoreguidelines-*,llvm-*,hicpp-*,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,portability-*,readability-*'
