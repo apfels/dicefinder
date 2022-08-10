@@ -9,8 +9,6 @@ int main(int /*argc*/, char** argv)
   auto args { args::extract_args(argv, "x") };
   std::cout << args << '\n';
 
-  std::cout << '\n';
-
   const auto start_time { std::chrono::steady_clock::now() };
   std::cerr << "Hello.\n";
 
