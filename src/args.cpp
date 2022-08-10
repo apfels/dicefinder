@@ -16,9 +16,9 @@ std::vector<std::string_view> view_string_array(char** argv)
 
 struct option_info
 {
-  std::string_view name;
-  std::string_view value;
-  std::string_view more {}; // This is needed for posix style joined switches like -xvf
+  std::string_view name;    // Name of main option that can have a value
+  std::string_view value;   // Value, if any found
+  std::string_view more {}; // This is for posix style joined switches like -xvf
 };
 
 option_info extract_single_arg(std::string_view arg, std::string_view posix_switches = {})
@@ -78,15 +78,9 @@ option_info extract_single_arg(std::string_view arg, std::string_view posix_swit
   return { {}, arg };
 }
 
-args_map extract_args(char** argv, std::string_view posix_switches)
+void named_in_place(args_map& result, auto begin, auto end, std::string_view posix_switches)
 {
-  const auto args { view_string_array(argv) };
-  args_map   result;
-
-  result.invocation = args[0];
-  const auto ddash { std::ranges::find(args, "--") };
-
-  for ( auto it { args.begin() + 1 }; it < ddash; ++it )
+  for ( auto it { begin }; it < end; ++it )
   {
     auto current { *it };
     auto opt { extract_single_arg(current, posix_switches) };
@@ -98,25 +92,34 @@ args_map extract_args(char** argv, std::string_view posix_switches)
         std::string_view {});
     }
 
-    if ( opt.name.empty() && opt.value.empty() )
-    { /* skip */
-    }
+    if ( opt.name.empty() && opt.value.empty() ) {}
     else if ( opt.name.empty() ) { result.positional.push_back(current); }
-    else if ( opt.value.empty() && it + 1 != args.end() )
+    else if ( opt.value.empty() && it + 1 != end )
     {
       auto nextopt { extract_single_arg(*(it + 1), posix_switches) };
 
-      // If next is not a named option, use it as value and skip.
+      // If next is not a named option, use as value and skip it.
       if ( nextopt.name.empty() )
       {
         result.named.emplace(opt.name, nextopt.value);
         ++it;
       }
-      // If next is a named option as well, it's not this options's value.
+
+      // If next is a named option as well, can't be this options's value.
       else { result.named.emplace(opt.name, opt.value); }
     }
     else { result.named.emplace(opt.name, opt.value); }
   }
+}
+
+args_map extract_args(char** argv, std::string_view posix_switches)
+{
+  const auto args { view_string_array(argv) };
+
+  args_map result;
+  result.invocation = args[0];
+  const auto ddash { std::ranges::find(args, "--") };
+  named_in_place(result, args.begin() + 1, ddash, posix_switches);
 
   if ( !(ddash == args.end()) )
   {
