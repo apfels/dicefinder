@@ -4,6 +4,29 @@
 #include <cstdlib>
 #include <iostream>
 
+enum class shape
+{
+  hexahedron,
+  octahedron,
+  pent_trapezohedron,
+  dodecahedron,
+  icosahedron,
+};
+
+template <>
+struct args::value_conv<shape>
+{
+  std::optional<shape> operator()(std::string_view sv)
+  {
+    if ( sv == "hexahedron" || sv == "d6" ) { return shape::hexahedron; }
+    if ( sv == "octahedron" || sv == "d8" ) { return shape::octahedron; }
+    if ( sv == "pent_trapezohedron" || sv == "d10" ) { return shape::pent_trapezohedron; }
+    if ( sv == "dodecahedron" || sv == "d12" ) { return shape::dodecahedron; }
+    if ( sv == "icosahedron" || sv == "d20" ) { return shape::icosahedron; }
+    return {};
+  }
+};
+
 int main(int /*argc*/, char** argv)
 {
   auto args = args::parse(
@@ -20,7 +43,7 @@ int main(int /*argc*/, char** argv)
       .init  = std::numeric_limits<float>::max(),
       .alt   = "float",
     },
-    args::positional<std::string_view> {
+    args::positional<shape> {
       .id = "shape",
     });
 

@@ -168,7 +168,7 @@ std::string synopsis(std::string_view app_name, Ts... opts)
 
   const auto operands = overload {
     [&]<typename T>(const positional<T>& o)
-    { msg += std::string { '<' } + std::string { o.id } + "> "; },
+    { msg += std::string { '<' } + std::string { o.alt } + "> "; },
     [](const auto&) {},
   };
   (..., operands(opts));
@@ -246,6 +246,38 @@ namespace internal {
     [](auto&, const auto&, const auto&) { return false; },
   };
 
+  constexpr auto push_positional = overload {
+    []<typename T>(parse_result& result, std::string_view val_str, const positional<T>& opt)
+    {
+      auto val { value_conv<T> {}(val_str) };
+      if ( !val )
+      {
+        result.raise(parse_result::err, "can't recognize positional '" + std::string(opt.id) + "'");
+      }
+      else
+      {
+        auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
+        if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *val) }; }
+        else { result.opts[opt.id] = val; }
+      }
+    },
+    [](auto&, const auto&, const auto&) {},
+  };
+
+  template <typename... Ts>
+  void validate_parse_result(parse_result& result, const Ts&... opts)
+  {
+    const auto check = [&]<typename T, template <typename> typename TT>(const TT<T>& opt)
+    {
+      if ( !result.getopt<T>(opt.id).has_value() )
+      {
+        result.raise(parse_result::err, std::string(opt.id) + " is required.");
+      }
+    };
+
+    (..., check(opts));
+  }
+
 } // namespace internal
 
 template <typename... Ts>
@@ -271,6 +303,10 @@ auto parse(char** argv, Ts... opts)
       result.raise(parse_result::err, "option '" + std::string(arg.first) + "' not known");
     }
   }
+
+  for ( const auto& arg : args.positional ) { (..., internal::push_positional(result, arg, opts)); }
+
+  internal::validate_parse_result(result, opts...);
 
   return result;
 }
