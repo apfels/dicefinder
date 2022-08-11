@@ -6,7 +6,11 @@
 
 int main(int /*argc*/, char** argv)
 {
-  auto args { args::extract_args(argv, "x") };
+  auto args = args::parse(
+    argv,
+    args::named<int> { .id = "use-alt", .sname = 'a', .flag = 2 },
+    args::positional<std::string_view> { .id = "help" });
+
   std::cout << args << '\n';
 
   const auto start_time { std::chrono::steady_clock::now() };
