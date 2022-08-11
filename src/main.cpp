@@ -8,18 +8,21 @@ int main(int /*argc*/, char** argv)
 {
   auto args = args::parse(
     argv,
-    args::named<float> { .id    = "point-sdev",
-                         .sname = 'p',
-                         .init  = std::numeric_limits<float>::max(),
-                         .alt   = "float",
-                         .help  = "maximum accepted standard deviation for point weights." },
-    args::named<float> { .id    = "face-sdev",
-                         .sname = 'f',
-                         .init  = std::numeric_limits<float>::max(),
-                         .alt   = "float",
-                         .help  = "maximum accepted standard deviation for face weights." },
-    args::positional<std::string_view> { .id   = "shape",
-                                         .help = "die to process. d6/d8/d10/d12/d20" });
+    args::named<float> {
+      .id    = "point-sdev",
+      .sname = 'p',
+      .init  = std::numeric_limits<float>::max(),
+      .alt   = "float",
+    },
+    args::named<float> {
+      .id    = "face-sdev",
+      .sname = 'f',
+      .init  = std::numeric_limits<float>::max(),
+      .alt   = "float",
+    },
+    args::positional<std::string_view> {
+      .id = "shape",
+    });
 
   if ( args.status != args.good )
   {

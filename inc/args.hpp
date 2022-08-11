@@ -6,8 +6,8 @@
 #include <any>
 #include <charconv>
 #include <optional>
-#include <ostream>
 #include <span>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <variant>
@@ -22,19 +22,6 @@ struct args_map
   std::string_view              invocation;
   std::vector<arg_entry>        named;
   std::vector<std::string_view> positional;
-
-  friend std::ostream& operator<<(std::ostream& os, const args_map& a)
-  {
-    os << a.invocation << ": ";
-    for ( const auto& n : a.named )
-    {
-      os << n.first;
-      if ( n.second ) { os << "='" << *n.second << "', "; }
-      else { os << "={}, "; }
-    }
-    for ( const auto& p : a.positional ) { os << "'" << p << "', "; }
-    return os;
-  }
 };
 
 struct flag_match
@@ -61,7 +48,6 @@ struct named
   T (*reduce)(T, T) { replace };
 
   std::string_view alt { id };
-  std::string_view help {};
 };
 
 template <typename T>
@@ -74,7 +60,6 @@ struct positional
   T (*reduce)(T, T) { replace };
 
   std::string_view alt { id };
-  std::string_view help {};
 };
 
 struct opt_result
@@ -135,48 +120,55 @@ struct value_conv<std::string_view> : std::identity
   using std::identity::operator();
 };
 
-// This is a lambda because it's used in an overload{}
-constexpr auto match_named =
-  []<typename T>(parse_result& result, const args_map::arg_entry& arg, const named<T>& opt)
+template <typename T>
+void append_flag(parse_result& result, const args_map::arg_entry& arg, const named<T>& opt)
 {
-  // Main test here. Is this the option we're looking for?
-  if ( (arg.first.size() == 1 && arg.first.starts_with(opt.sname)) || arg.first == opt.lname )
+  if ( arg.second )
   {
-    if ( opt.flag && arg.second )
+    result.raise(parse_result::err, std::string(arg.first) + " takes no argument");
+  }
+  else /* !arg.second */
+  {
+    auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
+    if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *opt.flag) }; }
+    else { result.opts[opt.id] = opt.flag; }
+  }
+}
+
+template <typename T>
+void append_valued(parse_result& result, const args_map::arg_entry& arg, const named<T>& opt)
+{
+  if ( !arg.second )
+  {
+    result.raise(parse_result::err, std::string(arg.first) + " needs argument");
+  }
+  else /* arg.second */
+  {
+    auto val { value_conv<T> {}(*arg.second) };
+    if ( !val )
     {
-      result.raise(parse_result::err, std::string(arg.first) + " takes no argument");
-    }
-    else if ( !opt.flag && !arg.second )
-    {
-      result.raise(parse_result::err, std::string(arg.first) + " needs argument");
-    }
-    else if ( opt.flag )
-    {
-      auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
-      if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *opt.flag) }; }
-      else { result.opts[opt.id] = opt.flag; }
+      result.raise(
+        parse_result::err,
+        std::string(arg.first) + " can't recognize argument '" + std::string(*arg.second) + "'");
     }
     else
     {
-      auto val { value_conv<T> {}(*arg.second) };
-      if ( !val )
-      {
-        result.raise(
-          parse_result::err,
-          std::string(arg.first) + " can't recognize argument '" + std::string(*arg.second) + "'");
-      }
-      else
-      {
-        auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
-        if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *val) }; }
-        else { result.opts[opt.id] = val; }
-      }
+      auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
+      if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *val) }; }
+      else { result.opts[opt.id] = val; }
     }
-
-    return true;
   }
-  return false;
-};
+}
+
+template <typename T>
+void append_matching_option(
+  parse_result&              result,
+  const args_map::arg_entry& arg,
+  const named<T>&            opt)
+{
+  if ( opt.flag ) { append_flag(result, arg, opt); }
+  else { append_valued(result, arg, opt); }
+}
 
 template <typename... Ts>
 std::string synopsis(std::string_view app_name, Ts... opts)
@@ -258,7 +250,15 @@ auto parse(char** argv, Ts... opts)
   (..., init_results(opts));
 
   const auto test_named = overload {
-    match_named,
+    []<typename T>(parse_result& result, const args_map::arg_entry& arg, const named<T>& opt)
+    {
+      if ( (arg.first.size() == 1 && arg.first.starts_with(opt.sname)) || arg.first == opt.lname )
+      {
+        append_matching_option(result, arg, opt);
+        return true;
+      }
+      return false;
+    },
     [](auto&, const auto&, const auto&) { return false; },
   };
 
