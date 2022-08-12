@@ -2,6 +2,7 @@
 #define DICE_DICE_ARGS_HPP
 
 #include "args.hpp"
+#include "dice_definitions.hpp"
 
 #include <iostream>
 #include <limits>
@@ -35,11 +36,23 @@ struct value_conv<::dice::shape>
 
 namespace dice {
 
+inline dense_topology shape_topology(shape s)
+{
+  switch ( s )
+  {
+  case shape::hexahedron : return hexahedron();
+  case shape::octahedron : return octahedron();
+  case shape::pent_trapezohedron : return pent_trapezohedron();
+  case shape::dodecahedron : return dodecahedron();
+  case shape::icosahedron : return icosahedron();
+  }
+}
+
 struct dicefinder_options_result
 {
-  float point_sdev;
-  float face_sdev;
-  shape die;
+  float          point_sdev;
+  float          face_sdev;
+  dense_topology die;
 };
 
 inline std::optional<dicefinder_options_result>
@@ -74,7 +87,7 @@ dicefinder_options(char** argv, std::ostream& error_stream = std::cerr)
   return dicefinder_options_result {
     .point_sdev = args.getopt<float>("point-sdev").value(),
     .face_sdev  = args.getopt<float>("face-sdev").value(),
-    .die        = args.getopt<shape>("shape").value(),
+    .die        = shape_topology(args.getopt<shape>("shape").value()),
   };
 }
 
