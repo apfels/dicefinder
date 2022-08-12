@@ -7,7 +7,7 @@ namespace dice {
 
 std::vector<dense_point> dense_points(const sparse_topology& sparse, point_index n_points)
 {
-  std::vector<dense_point> result;
+  std::vector<dense_point> result(n_points);
 
   std::size_t n_corners {};
   for ( const auto& f : sparse.faces )
