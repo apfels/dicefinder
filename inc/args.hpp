@@ -55,8 +55,11 @@ struct positional
 {
   using value_type = T;
 
-  std::string_view id;
-  std::optional<T> init {};
+  std::string_view           id;
+  std::optional<T>           init {};
+  std::optional<std::size_t> min_idx;
+  std::optional<std::size_t> max_idx;
+  std::size_t                max_n { 1 };
   T (*reduce)(T, T) { replace };
 
   std::string_view alt { id };
@@ -168,7 +171,11 @@ std::string synopsis(std::string_view app_name, Ts... opts)
 
   const auto operands = overload {
     [&]<typename T>(const positional<T>& o)
-    { msg += std::string { '<' } + std::string { o.alt } + "> "; },
+    {
+      msg += std::string { '<' } + std::string { o.alt };
+      if ( o.max_n > 1 ) { msg += " ..."; }
+      msg += "> ";
+    },
     [](const auto&) {},
   };
   (..., operands(opts));
@@ -246,22 +253,30 @@ namespace internal {
     [](auto&, const auto&, const auto&) { return false; },
   };
 
-  constexpr auto push_positional = overload {
-    []<typename T>(parse_result& result, std::string_view val_str, const positional<T>& opt)
+  constexpr auto test_positional = overload {
+    []<typename T>(
+      parse_result&    result,
+      std::string_view val_str,
+      positional<T>&   opt,
+      std::size_t&     idx)
     {
+      ++idx;
+      if ( opt.min_idx && (opt.min_idx.value() > idx - 1) ) { return false; }
+      if ( opt.max_idx && (opt.max_idx.value() < idx - 1) ) { return false; }
       auto val { value_conv<T> {}(val_str) };
-      if ( !val )
-      {
-        result.raise(parse_result::err, "can't recognize positional '" + std::string(opt.id) + "'");
-      }
-      else
-      {
-        auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
-        if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *val) }; }
-        else { result.opts[opt.id] = val; }
-      }
+      if ( !val ) { return false; }
+
+      if ( opt.max_n < 1 ) { return false; }
+
+      // decrease only when definitively matched
+      --opt.max_n;
+
+      auto old_val { std::any_cast<std::optional<T>>(result.opts[opt.id]) };
+      if ( old_val ) { result.opts[opt.id] = std::optional<T> { opt.reduce(*old_val, *val) }; }
+      else { result.opts[opt.id] = val; }
+      return true;
     },
-    [](auto&, const auto&, const auto&) {},
+    [](auto...) { return false; },
   };
 
   template <typename... Ts>
@@ -304,7 +319,14 @@ auto parse(char** argv, Ts... opts)
     }
   }
 
-  for ( const auto& arg : args.positional ) { (..., internal::push_positional(result, arg, opts)); }
+  for ( std::size_t i {}; const auto& arg : args.positional )
+  {
+    bool matched = (... || internal::test_positional(result, arg, opts, i));
+    if ( !matched )
+    {
+      result.raise(parse_result::err, "can't recognize positional '" + std::string(arg) + "'");
+    }
+  }
 
   internal::validate_parse_result(result, opts...);
 
