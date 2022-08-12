@@ -204,7 +204,7 @@ namespace internal {
   {
     if ( !arg.second )
     {
-      result.raise(parse_result::err, std::string(arg.first) + " needs argument");
+      result.raise(parse_result::err, "option " + std::string(arg.first) + " needs argument");
     }
     else /* arg.second */
     {
@@ -213,7 +213,8 @@ namespace internal {
       {
         result.raise(
           parse_result::err,
-          std::string(arg.first) + " can't recognize argument '" + std::string(*arg.second) + "'");
+          "option " + std::string(arg.first) + " can't recognize argument '" +
+            std::string(*arg.second) + "'");
       }
       else
       {

@@ -45,6 +45,7 @@ inline const sparse_topology& shape_topology(shape s)
   case shape::pent_trapezohedron : return pent_trapezohedron();
   case shape::dodecahedron : return dodecahedron();
   case shape::icosahedron : return icosahedron();
+  default : return hexahedron(); // gcc doesn't like no default
   }
 }
 
