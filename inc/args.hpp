@@ -91,7 +91,7 @@ struct parse_result
   }
 
   template <typename T>
-  std::optional<T> getopt(std::string_view id)
+  std::optional<T> getopt(std::string_view id) const
   {
     return std::any_cast<std::optional<T>>(opts.at(id));
   }
@@ -324,7 +324,10 @@ auto parse(char** argv, Ts... opts)
     bool matched = (... || internal::test_positional(result, arg, opts, i));
     if ( !matched )
     {
-      result.raise(parse_result::err, "can't recognize positional '" + std::string(arg) + "'");
+      // i is increased before debug output, but keep to give user one-based indices
+      result.raise(
+        parse_result::err,
+        "can't recognize positional #" + std::to_string(i) + ": '" + std::string(arg) + "'");
     }
   }
 
