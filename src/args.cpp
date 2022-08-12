@@ -84,7 +84,7 @@ option_info extract_single_arg(std::string_view arg, std::span<flag_match> flags
       flags.end() )
     {
       std::vector<std::string_view> more;
-      for ( auto i { 1z }; i < arg.size(); ++i )
+      for ( auto i { 1uz }; i < arg.size(); ++i )
       {
         more.emplace_back(arg.begin() + i, arg.begin() + i + 1);
       }
@@ -93,7 +93,7 @@ option_info extract_single_arg(std::string_view arg, std::span<flag_match> flags
 
     // starts with flag, ends with valued
     std::vector<std::string_view> more;
-    for ( auto i { 1z }; i < arg.size() - 1; ++i )
+    for ( auto i { 1uz }; i < arg.size() - 1; ++i )
     {
       more.emplace_back(arg.begin() + i, arg.begin() + i + 1);
     }
