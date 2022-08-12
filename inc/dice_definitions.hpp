@@ -7,9 +7,9 @@ namespace dice {
 
 // NOLINTBEGIN(*-avoid-magic-numbers): data definition file
 
-inline dense_topology hexahedron()
+inline const sparse_topology& hexahedron()
 {
-  return make_dense({
+  const static sparse_topology t {
     .faces = {
       {{0,1,2,3}},
       {{0,3,4,5}},
@@ -27,12 +27,13 @@ inline dense_topology hexahedron()
       .offsets = { 0, 1, 1, 1, 3, 0 },
       .repeat = 3
     },
-  });
+  };
+  return t;
 }
 
-inline dense_topology octahedron()
+inline const sparse_topology& octahedron()
 {
-  return make_dense({
+  const static sparse_topology t {
     .faces = {
       {{0,1,2}},
       {{0,2,3}},
@@ -53,12 +54,13 @@ inline dense_topology octahedron()
       .offsets = { 0, 2, 2, 2, 2, 4, 4, 0 },
       .repeat = 2
     },
-  });
+  };
+  return t;
 }
 
-inline dense_topology pent_trapezohedron()
+inline const sparse_topology& pent_trapezohedron()
 {
-  return make_dense({
+  const static sparse_topology t {
     .faces = {
       {{0,1,2,3}},
       {{0,3,4,5}},
@@ -79,12 +81,13 @@ inline dense_topology pent_trapezohedron()
       {4,7},
     },
     .rotation = {},
-  });
+  };
+  return t;
 }
 
-inline dense_topology dodecahedron()
+inline const sparse_topology& dodecahedron()
 {
-  return make_dense({
+  const static sparse_topology t {
     .faces = {
       {{0,1,2,3,4}},
       {{0,4,5,6,7}},
@@ -111,12 +114,13 @@ inline dense_topology dodecahedron()
       .offsets = {0, 1, 1, 1, 1, 8, 1, 1, 1, 1, 8, 0},
       .repeat = 4,
     },
-  });
+  };
+  return t;
 }
 
-inline dense_topology icosahedron()
+inline const sparse_topology& icosahedron()
 {
-  return make_dense({
+  const static sparse_topology t {
     .faces = {
       {{0,1,2}},
       {{0,2,3}},
@@ -155,7 +159,8 @@ inline dense_topology icosahedron()
       .offsets = {0, 3, 3, 3, 3, 3, 3, 14, 14, 14, 3, 3, 3, 3, 3, 3, 14, 14, 14, 0},
       .repeat = 2
     },
-  });
+  };
+  return t;
 }
 
 // NOLINTEND(*-avoid-magic-numbers)

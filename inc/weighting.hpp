@@ -16,7 +16,7 @@ struct point_weight
   float avg;
   float lower; // how much lower than avg is lowest weight
   float upper; // how much higher than avg is highest weight
-  float stdev;
+  float sdev;
 };
 
 struct face_weight
@@ -24,7 +24,7 @@ struct face_weight
   float avg;
   float lower; // same as point_lower but for faces
   float upper; // same as point_lower but for faces
-  float stdev;
+  float sdev;
 };
 
 struct die_weight
@@ -35,8 +35,8 @@ struct die_weight
   friend std::ostream& operator<<(std::ostream& os, const die_weight& w)
   {
     return os << "point: " << w.points.avg << " -" << w.points.lower << " +" << w.points.upper
-              << " ~" << w.points.stdev << " :: face: " << w.faces.avg << " -" << w.faces.lower
-              << " +" << w.faces.upper << " ~" << w.faces.stdev;
+              << " ~" << w.points.sdev << " :: face: " << w.faces.avg << " -" << w.faces.lower
+              << " +" << w.faces.upper << " ~" << w.faces.sdev;
   }
 
   friend std::partial_ordering operator<=>(const die_weight& a, const die_weight& b)
@@ -45,17 +45,17 @@ struct die_weight
     const auto aa = std::tie(
       a.points.lower,
       a.points.upper,
-      a.points.stdev,
+      a.points.sdev,
       a.faces.lower,
       a.faces.upper,
-      a.faces.stdev);
+      a.faces.sdev);
     const auto bb = std::tie(
       b.points.lower,
       b.points.upper,
-      b.points.stdev,
+      b.points.sdev,
       b.faces.lower,
       b.faces.upper,
-      b.faces.stdev);
+      b.faces.sdev);
 
     return aa <=> bb;
   }

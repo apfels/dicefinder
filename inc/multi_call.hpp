@@ -15,12 +15,15 @@ template <std::ranges::random_access_range R>
 auto multi_call(
   auto&& fn,
   const R& datasets,
-  std::size_t n_jobs)
+  std::size_t n_jobs = {})
 requires requires { fn(std::declval< typename R::value_type >()); }
 
 // clang-format on
 {
-  if ( n_jobs < 1 ) { throw std::logic_error("no jobs allocated to multi_call."); }
+  if ( n_jobs < 1 )
+  {
+    n_jobs = std::thread::hardware_concurrency() ? std::thread::hardware_concurrency() : 1;
+  }
 
   const auto         size { std::ranges::size(datasets) };
   std::atomic_size_t count {};

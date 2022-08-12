@@ -78,7 +78,7 @@ point_weight make_point_weight(const dense_topology& topo, const std::vector<fac
   auto minmax_point { std::ranges::minmax_element(weights) };
   result.lower = avg_point - *minmax_point.min;
   result.upper = *minmax_point.max - avg_point;
-  result.stdev = std::sqrt(pop_variance(weights, avg_point));
+  result.sdev  = std::sqrt(pop_variance(weights, avg_point));
 
   return result;
 }
@@ -103,7 +103,7 @@ face_weight make_face_weight(const dense_topology& topo, const std::vector<face_
   auto minmax_face { std::ranges::minmax_element(face_weights) };
   result.lower = avg_face - *minmax_face.min;
   result.upper = *minmax_face.max - avg_face;
-  result.stdev = std::sqrt(pop_variance(face_weights, avg_face));
+  result.sdev  = std::sqrt(pop_variance(face_weights, avg_face));
 
   return result;
 }

@@ -36,7 +36,7 @@ struct value_conv<::dice::shape>
 
 namespace dice {
 
-inline dense_topology shape_topology(shape s)
+inline const sparse_topology& shape_topology(shape s)
 {
   switch ( s )
   {
@@ -50,9 +50,9 @@ inline dense_topology shape_topology(shape s)
 
 struct dicefinder_options_result
 {
-  float          point_sdev;
-  float          face_sdev;
-  dense_topology die;
+  float                  point_sdev;
+  float                  face_sdev;
+  const sparse_topology& shape;
 };
 
 inline std::optional<dicefinder_options_result>
@@ -87,7 +87,7 @@ dicefinder_options(char** argv, std::ostream& error_stream = std::cerr)
   return dicefinder_options_result {
     .point_sdev = args.getopt<float>("point-sdev").value(),
     .face_sdev  = args.getopt<float>("face-sdev").value(),
-    .die        = shape_topology(args.getopt<shape>("shape").value()),
+    .shape      = shape_topology(args.getopt<shape>("shape").value()),
   };
 }
 
