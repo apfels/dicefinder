@@ -15,19 +15,21 @@ Synopsis: `dicefinder [-v] [-p|--point-sdev float] [-f|--face-sdev float] <shape
 - `point-sdev` and `face-sdev`: Discard layouts with higher standard deviation of point and face weights, respectively.
   These may be omitted, but the d20 in particular will take quite some time to sort and print. There is no epsilon for
   comparisons, so you may want to give a slightly higher value.
+- You can output progress with flag `-v` or `--print-progress`. As the d20 takes only a few seconds, this is probably
+  not needed.
 - The output _will_ include mirrored layouts, however it will _not_ include rotated layouts. '1' will always be the
   value on the zeroth face.
 
 This program will evaluate every (non-rotated) layout of a given die. As the number of combinations grows rapidly, and
-gets more complex to ecvaluate, a d30 is already past the limit of what can reasonably be computed. I have included an
-untested (!) layout in any case.
+each layout takes longer to process, a d30 is already past the limit of what can reasonably be computed. An
+untested (!) layout is included in any case.
 
 ## Included Dice
 All the 'DnD Dice' are included, except for the tetrahedron/d4 (see limitations). The unwrapping of these is a spiral
 peel, shown below with face indices:
 ![layouts](doc/layouts.webp)
 
-The smaller dice have no perfect layout
+The smaller dice have no 'perfect' layout, only d20.
 
 ## Limitations
 - This project assumes classical dice where each pair of opposing sides gives the same sum; i.e. 1+6, 2+5, 3+4. That
