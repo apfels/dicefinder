@@ -15,6 +15,7 @@ enum class shape
   pent_trapezohedron,
   dodecahedron,
   icosahedron,
+  rhombic_triacontahedron,
 };
 } // namespace dice
 
@@ -29,6 +30,10 @@ struct value_conv<::dice::shape>
     if ( sv == "pent_trapezohedron" || sv == "d10" ) { return ::dice::shape::pent_trapezohedron; }
     if ( sv == "dodecahedron" || sv == "d12" ) { return ::dice::shape::dodecahedron; }
     if ( sv == "icosahedron" || sv == "d20" ) { return ::dice::shape::icosahedron; }
+    if ( sv == "rhombic_triacontahedron" || sv == "d30" )
+    {
+      return ::dice::shape::rhombic_triacontahedron;
+    }
     return {};
   }
 };
@@ -45,6 +50,7 @@ inline const sparse_topology& shape_topology(shape s)
   case shape::pent_trapezohedron : return pent_trapezohedron();
   case shape::dodecahedron : return dodecahedron();
   case shape::icosahedron : return icosahedron();
+  case shape::rhombic_triacontahedron : return rhombic_triacontahedron();
   default : return hexahedron(); // gcc doesn't like no default
   }
 }
@@ -54,6 +60,7 @@ struct dicefinder_options_result
   float                  point_sdev;
   float                  face_sdev;
   const sparse_topology& shape;
+  bool                   print_progress;
 };
 
 inline std::optional<dicefinder_options_result>
@@ -73,6 +80,13 @@ dicefinder_options(char** argv, std::ostream& error_stream = std::cerr)
       .init  = std::numeric_limits<float>::max(),
       .alt   = "float",
     },
+    args::named<bool> {
+      .id    = "print-progress",
+      .sname = 'v',
+      .init  = false,
+      .flag  = true,
+      .alt   = "bool",
+    },
     args::positional<shape> {
       .id = "shape",
     });
@@ -86,9 +100,10 @@ dicefinder_options(char** argv, std::ostream& error_stream = std::cerr)
   }
 
   return dicefinder_options_result {
-    .point_sdev = args.getopt<float>("point-sdev").value(),
-    .face_sdev  = args.getopt<float>("face-sdev").value(),
-    .shape      = shape_topology(args.getopt<shape>("shape").value()),
+    .point_sdev     = args.getopt<float>("point-sdev").value(),
+    .face_sdev      = args.getopt<float>("face-sdev").value(),
+    .shape          = shape_topology(args.getopt<shape>("shape").value()),
+    .print_progress = args.getopt<bool>("print-progress").value(),
   };
 }
 

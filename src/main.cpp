@@ -19,6 +19,7 @@ int main(int /*argc*/, char** argv)
     .batch_size     = batch_size,
     .point_max_sdev = options->point_sdev,
     .face_max_sdev  = options->face_sdev,
+    .print_progress = options->print_progress,
   });
 
   std::cerr << "Got " << results.size() << " results.\n";

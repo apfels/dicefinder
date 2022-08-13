@@ -101,7 +101,13 @@ template <typename T>
 struct value_conv;
 
 template <typename T>
-concept arithmetic = std::floating_point<T> || std::integral<T>;
+concept arithmetic = (std::floating_point<T> || std::integral<T>)&&!std::same_as<T, bool>;
+
+template <>
+struct value_conv<std::string_view> : std::identity
+{
+  using std::identity::operator();
+};
 
 template <arithmetic T>
 struct value_conv<T>
@@ -118,9 +124,22 @@ struct value_conv<T>
 };
 
 template <>
-struct value_conv<std::string_view> : std::identity
+struct value_conv<bool>
 {
-  using std::identity::operator();
+  static std::string lower(std::string_view sv)
+  {
+    std::string s;
+    for ( auto c : sv ) { s.push_back(char(std::tolower(c))); }
+    return s;
+  }
+
+  std::optional<bool> operator()(std::string_view sv)
+  {
+    auto s { lower(sv) };
+    if ( s == "true" || s == "yes" || s == "y" || s == "on" || s == "1" ) { return true; }
+    if ( s == "false" || s == "no" || s == "n" || s == "off" || s == "0" ) { return false; }
+    return {};
+  }
 };
 
 template <typename... Ts>
