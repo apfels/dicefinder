@@ -7,6 +7,8 @@ You really want to build in release mode. -Ofast should be safe. example:
 - `cmake -G Ninja -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_CXX_FLAGS="-Ofast -flto" ..`
 - `ninja`
 
+You need a C++23-ready compiler. clang 14 and gcc 12.1 have been tested. MSVC might work, but is untested.
+
 ## Usage
 Synopsis: `dicefinder [-v] [-p|--point-sdev float] [-f|--face-sdev float] <shape>`
 
